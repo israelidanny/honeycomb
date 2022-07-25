@@ -21,7 +21,7 @@ export const defaultHexSettings: HexSettings = {
 }
 
 export const createHexPrototype = <T extends Hex>(
-  options?: Partial<Omit<T, 'dimensions' | 'orientation' | 'origin' | 'offset'> | HexPrototypeOptions>,
+  options: Partial<Omit<T, 'dimensions' | 'orientation' | 'origin' | 'offset'> | HexPrototypeOptions> = {},
 ): T => {
   // pseudo private property
   const s = new WeakMap()
@@ -109,6 +109,9 @@ export const createHexPrototype = <T extends Hex>(
         return hexToPoint(this).y
       },
     },
+    // hacky (but working) way to get getters and setters with `this` pointing to the instance into the prototype
+    // not sure why it doesn't work for all property descriptors (including setters)
+    ...Object.fromEntries(Object.entries(Object.getOwnPropertyDescriptors(options)).filter(([_, value]) => value.get)),
   } as PropertyDescriptorMap & ThisType<T & Hex>)
 
   return Object.defineProperties(prototype, {
